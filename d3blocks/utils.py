@@ -57,10 +57,17 @@ def scale(X, vmax=100, make_round=True, logger=None):
 # %% Get unique labels
 def set_labels(df, col_labels=None, logger=None):
     """Set unique labels."""
-    if df is None: raise Exception('Input labels must be provided.')
+
+
+    if df is None:
+        raise Exception('Input labels must be provided.')
+
     if isinstance(df, pd.DataFrame) and (col_labels is not None) and np.all(ismember(col_labels, df.columns.values)[0]):
-        if logger is not None: logger.info('Collecting labels from DataFrame using the "source" and "target" columns.')
-        labels = df[col_labels].values.flatten().astype(str)
+        if logger is not None:
+            logger.info('Collecting labels from DataFrame using the "source" and "target" columns.')
+        labels = []
+        for col in col_labels:
+            labels.extend(df.loc[:, col].unique())
     else:
         labels = df
 
@@ -68,12 +75,13 @@ def set_labels(df, col_labels=None, logger=None):
     labels = pre_processing(labels)
 
     # Checks
-    if (labels is None) or len(labels)<1:
+    if (labels is None) or len(labels) < 1:
         raise Exception(logger.error('Could not extract the labels!'))
 
     # Get unique categories without sort
     indexes = np.unique(labels, return_index=True)[1]
     uilabels = [labels[index] for index in sorted(indexes)]
+
     # Return
     return uilabels
 
@@ -172,9 +180,11 @@ def convert_dataframe_dict(X, frame, chart=None, logger=None):
 def create_unique_dataframe(X, logger=None):
     # Check whether labels are unique
     if isinstance(X, pd.DataFrame):
+        X = X.copy()
         Iloc = ismember(X.columns, ['source','target','weight'])[0]
         X = X.loc[:, Iloc]
-        if 'weight' in X.columns: X['weight'] = X['weight'].astype(float)
+        if 'weight' in X.columns:
+            X.loc[:, "weight"] = X.loc[:, "weight"].astype(float, copy=False)
         # Groupby values and sum the weights
         X = X.groupby(by=['source', 'target']).sum()
         X.reset_index(drop=False, inplace=True)

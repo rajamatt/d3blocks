@@ -31,6 +31,7 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/sankey
     	  <option value="justify" {{ align_select_justify }}>Justify</option>
     	  <option value="center" {{ align_select_center }}>Center</option>
     	</select>
+
     </form>
     <br>
 
@@ -40,11 +41,13 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/sankey
 
 	const data = {{ json_data }}
 
-        const links = data.links.map(({source, target, value}) => ({
+        const links = data.links.map(({source, target, value, unit}) => ({
             source: data.nodes[source].name,
             target: data.nodes[target].name,
-            value
+            value,
+            unit
         }))
+
 
         // Required for the input selection form
         let linkColor="{{ link_color }}" // source, target, source-target
@@ -61,7 +64,7 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/sankey
                 align: align,
                 linkColor: linkColor,
                 linkStrokeOpacity: {{ link_stroke_opacity }},
-                format: (value) => `${value.toFixed(1)}`,
+                format: (value) => `${value.toExponential(2)}`,
                 width: {{ WIDTH }},
                 height: {{ HEIGHT }},
                 marginTop: {{ marginTop }},
@@ -72,6 +75,7 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/sankey
                 nodePadding: {{ node_padding }},
                 nodeStroke: "{{ node_stroke_color }}",
             })
+
     
       		// To update the chart based on the selection, we remove the chart and create a new one.
       		for (let svg of document.body.getElementsByTagName("svg")) {

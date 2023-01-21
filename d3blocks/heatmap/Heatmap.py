@@ -114,7 +114,7 @@ def color_on_clusterlabel(adjmat, df, node_properties, config, logger):
     if config['classlabel']=='cluster':
         # Cluster the nodes
         ce = clusteval(**config['cluster_params'])
-        results = ce.fit(adjmat.values)
+        results = ce.fit(adjmat.weight.values)
         Iloc, idx = ismember(node_properties['label'].values, adjmat.index.values)
         if np.any(~Iloc):
             logger.error('Feature name(s): %s can not be used. Hint: Remove special characters. <return>' %(df.index.values[~np.isin(np.arange(0, df.shape[0]), idx)]))

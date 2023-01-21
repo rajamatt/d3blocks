@@ -1737,7 +1737,7 @@
       // const color_func = ordinal().domain(names).range(schemeTableau10); // TODO wut??
       const node_colors = new Map(nodes.map(n => [n.name, n.color]));       // GET NODE COLORS
       const node_opacity = new Map(nodes.map(n => [n.name, n.opacity]));    // GET NODE OPACITY
-      const innerRadius = Math.min(width, height) * 0.5 - 150;
+      const innerRadius = Math.min(width, height) * 0.45 - 150;
       const outerRadius = innerRadius + 10;
       const index = new Map(names.map((name, i) => [name, i]));
       let matrix = Array.from(index, () => new Array(names.length).fill(0));
@@ -1823,34 +1823,18 @@
           .attr("fill-opacity", d => link_opacity(d.source.index, d.target.index))    // OPACITY LINKS
           .attr("d", ribbon)
           .append("title")
-          .text(d => `${names[d.source.index]} → ${names[d.target.index]} ${d.source.value}`)
+          .text(d => `${names[d.source.index]} → ${names[d.target.index]} ${d.source.value} ${data[0]["unit"]}`)
 //		  .on("mouseover", mousover)
 //		  .on("mouseout", mouseout)
           ;
 
-//	  function mousover(event, d) {
-//		link.style("mix-blend-mode", null);
-//		d3.select(this).attr("font-weight", "bold");
-//		d3.selectAll(d.incoming.map(d => d.path)).attr("stroke", "#00f").raise();
-//		d3.selectAll(d.incoming.map(([d]) => d.text)).attr("fill", "#00f").attr("font-weight", "bold");
-//		d3.selectAll(d.outgoing.map(d => d.path)).attr("stroke", "#f00").raise();
-//		d3.selectAll(d.outgoing.map(([, d]) => d.text)).attr("fill", "#f00").attr("font-weight", "bold");
-//	  }
-//
-//	  function mouseout(event, d) {
-//		link.style("mix-blend-mode", "multiply");
-//		d3.select(this).attr("font-weight", null);
-//		d3.selectAll(d.incoming.map(d => d.path)).attr("stroke", null);
-//		d3.selectAll(d.incoming.map(([d]) => d.text)).attr("fill", null).attr("font-weight", null);
-//		d3.selectAll(d.outgoing.map(d => d.path)).attr("stroke", null);
-//		d3.selectAll(d.outgoing.map(([, d]) => d.text)).attr("fill", null).attr("font-weight", null);
-//	  }
 
 
       return svg.node();
   }
 
   window.Chord = function ({data, nodes, width, height}) {
+
       const svg = generateChord({data, nodes, width, height});
       document.body.append(svg);
   };

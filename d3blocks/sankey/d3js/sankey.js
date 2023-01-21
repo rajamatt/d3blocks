@@ -2111,7 +2111,7 @@
                            nodeGroup, // given d in nodes, returns an (ordinal) value for color
                            nodeGroups, // an array of ordinal values representing the node groups
                            nodeLabel, // given d in (computed) nodes, text to label the associated rect
-                           nodeTitle = d => `${d.id}\n${format$1(d.value)}`, // given d in (computed) nodes, hover text
+                           nodeTitle = d => `${d.id}\n${format$1(d.value)} ${d.unit}`, // given d in (computed) nodes, hover text
                            nodeAlign = align, // Sankey node alignment strategy: left, right, justify, center
                            nodeWidth = 15, // width of node rects
                            nodePadding = 10, // vertical separation between adjacent nodes
@@ -2123,8 +2123,9 @@
                            linkSource = ({source}) => source, // given d in links, returns a node identifier string
                            linkTarget = ({target}) => target, // given d in links, returns a node identifier string
                            linkValue = ({value}) => value, // given d in links, returns the quantitative value
+                           linkUnit = ({unit}) => unit,
                            linkPath = sankeyLinkHorizontal(), // given d in (computed) links, returns the SVG path
-                           linkTitle = d => `${d.source.id} → ${d.target.id}\n${format$1(d.value)}`, // given d in (computed) links
+                           linkTitle = d => `${d.source.id} → ${d.target.id}\n${format$1(d.value)} ${d.unit}`, // given d in (computed) links
                            linkColor = "source-target", // source, target, source-target, or static color
                            linkStrokeOpacity = 0.5, // link stroke opacity
                            linkMixBlendMode = "multiply", // link blending mode
@@ -2147,13 +2148,14 @@
       const LS = map$1(links, linkSource).map(intern);
       const LT = map$1(links, linkTarget).map(intern);
       const LV = map$1(links, linkValue);
+      const LU = map$1(links, linkUnit);
       if (nodes === undefined) nodes = Array.from(union(LS, LT), id => ({id}));
       const N = map$1(nodes, nodeId).map(intern);
       const G = nodeGroup == null ? null : map$1(nodes, nodeGroup).map(intern);
 
       // Replace the input nodes and links with mutable objects for the simulation.
-      nodes = map$1(nodes, (_, i) => ({id: N[i]}));
-      links = map$1(links, (_, i) => ({source: LS[i], target: LT[i], value: LV[i]}));
+      nodes = map$1(nodes, (_, i) => ({id: N[i], unit: LU[0]}));
+      links = map$1(links, (_, i) => ({source: LS[i], target: LT[i], value: LV[i], unit: LU[i]}));
 
       // Ignore a group-based linkColor option if no groups are specified.
       if (!G && ["source", "target", "source-target"].includes(linkColor)) linkColor = "currentColor";

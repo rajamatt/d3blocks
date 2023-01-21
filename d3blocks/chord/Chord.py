@@ -124,6 +124,7 @@ def set_edge_properties(df, **kwargs):
 
     """
     df = df.copy()
+    unit = df["unit"].iloc[0]
     node_properties = kwargs.get('node_properties')
     logger = kwargs.get('logger', None)
     color = kwargs.get('color', 'source')
@@ -189,6 +190,8 @@ def set_edge_properties(df, **kwargs):
         _, df['labels'] = ismember(df[['source', 'target']].values.astype(str), uidf[['source', 'target']].values.astype(str), method='rows')
         df['color'], _ = set_colors(df, df['labels'].values.astype(str), cmap, c_gradient=None)
 
+    df["unit"] = unit
+
     # return
     return df
 
@@ -221,6 +224,7 @@ def show(df, **kwargs):
         Dictionary containing updated configuration keys.
 
     """
+
     node_properties = kwargs.get('node_properties')
     logger = kwargs.get('logger', None)
     config = update_config(kwargs, logger)
@@ -234,8 +238,10 @@ def show(df, **kwargs):
     df.reset_index(inplace=True, drop=True)
     df['source_id'] = list(map(lambda x: node_properties.get(x)['id'], df['source']))
     df['target_id'] = list(map(lambda x: node_properties.get(x)['id'], df['target']))
+
     # Create the data from the input of javascript
     X = get_data_ready_for_d3(df, node_properties)
+
     # Write to HTML
     return write_html(X, config, logger=logger)
 
@@ -311,10 +317,10 @@ def get_data_ready_for_d3(df, labels):
     X = X[:-1] + '],'
 
     # Set the links
-    # source_target_id = list(zip(list(map(lambda x: labels.get(x)['id'], df['source'])),  list(map(lambda x: labels.get(x)['id'], df['target']))))
+
     X = X + ' "links":['
     for _, row in df.iterrows():
-        X = X + '{"source":' + str(row['source_id']) + ',"target":' + str(row['target_id']) + ',"value":' + str(row['weight']) + ',"opacity":' + str(row['opacity']) + ',"color":' + '"' + str(row['color']) + '"' + '},'
+        X = X + '{"source":' + str(row['source_id']) + ',"target":' + str(row['target_id']) + ',"value":' + str(row['weight']) + ',"unit":"' + str(row['unit']) + '","opacity":' + str(row['opacity']) + ',"color":' + '"' + str(row['color']) + '"' + '},'
     X = X[:-1] + ']}'
 
     # Return

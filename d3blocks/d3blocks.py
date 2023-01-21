@@ -46,10 +46,11 @@ logger = logging.getLogger('')
 for handler in logger.handlers[:]:  # get rid of existing old handlers
     logger.removeHandler(handler)
 console = logging.StreamHandler()
-formatter = logging.Formatter('[d3blocks] >%(levelname)s> %(message)s')
-console.setFormatter(formatter)
-logger.addHandler(console)
+#formatter = logging.Formatter('[d3blocks] >%(levelname)s> %(message)s')
+#console.setFormatter(formatter)
+#logger.addHandler(console)
 logger = logging.getLogger()
+logger.propagate = False
 
 
 class D3Blocks():
@@ -995,7 +996,20 @@ class D3Blocks():
         # Store chart
         self.chart = set_chart_func('Sankey', logger)
         # Store properties
-        self.config = self.chart.set_config(config=self.config, filepath=filepath, title=title, showfig=showfig, overwrite=overwrite, figsize=figsize, link=link, node=node, margin=margin, reset_properties=reset_properties, notebook=notebook, logger=logger)
+        self.config = self.chart.set_config(
+            config=self.config,
+            filepath=filepath,
+            title=title,
+            showfig=showfig,
+            overwrite=overwrite,
+            figsize=figsize,
+            link=link,
+            node=node,
+            margin=margin,
+            reset_properties=reset_properties,
+            notebook=notebook,
+            logger=logger
+        )
         # Set default label properties
         if self.config['reset_properties'] or (not hasattr(self, 'node_properties')):
             self.set_node_properties(df, cmap=self.config['cmap'])
@@ -1442,7 +1456,7 @@ class D3Blocks():
 
         # Cleaning
         adjmat = utils.remove_quotes(df)
-        df = self.adjmat2vec(adjmat)
+        df = self.adjmat2vec(adjmat, min_weight=adjmat["weight"].min())
         self._clean(clean_config=reset_properties, logger=logger)
         # Store chart
         self.chart = set_chart_func('Heatmap', logger)
@@ -1718,6 +1732,7 @@ class D3Blocks():
         self.config['slider'] = slider
         self.config['notebook'] = notebook
 
+
         # Copy of data
         df = df.copy()
         # Remvove quotes from source-target labels
@@ -1726,6 +1741,7 @@ class D3Blocks():
         self.D3graph = d3network.d3graph(collision=collision, charge=charge, slider=slider)
         # Convert vector to adjmat
         adjmat = d3network.vec2adjmat(df['source'], df['target'], weight=df['weight'])
+
         # Create default graph
         self.D3graph.graph(adjmat, color=color, size=size, scaler=scaler)
         # Open the webbrowser
@@ -2130,7 +2146,9 @@ class D3Blocks():
         >>> vector = d3.adjmat2vec(adjmat)
 
         """
-        return d3network.adjmat2vec(df, min_weight=min_weight)
+
+        adjmat = d3network.vec2adjmat(df['source'], df['target'], df['weight'])
+        return d3network.adjmat2vec(adjmat, min_weight=min_weight)
 
     def import_example(self, data, n=10000, c=300, date_start="17-12-1903 00:00:00", date_stop="17-12-1903 23:59:59"):
         """Import example dataset from github source.
