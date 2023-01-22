@@ -1,0 +1,55 @@
+<!--
+Library     : d3blocks
+Author      : E.Taskesen, O.Verver
+Mail        : erdogant@gmail.com, oliver@sensibly.nl
+Github      : https://github.com/d3blocks/d3blocks
+Licensed    : GPL3
+Forked      : Mike Bostock; https://observablehq.com/@d3/directed-chord-diagram
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ TITLE }}</title>
+</head>
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.2/d3.min.js"></script>
+<script src="https://unpkg.com/topojson@3"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+
+<script>
+	{% include "htl.js" %}
+	{% include "swatches.js" %}
+	{% include "treemap.js" %}
+
+    const data = {{ json_data }};
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        chart = Treemap(data, {
+          path: d => d.name.replace(/\./g, "/"),
+          value: d => d?.weight, // size of each node (file); null for internal nodes (folders)
+          group: d => d.name.split(".")[0],
+          label: (d, n) => [...d.name.split(".").pop().split(/(?=[A-Z][a-z])/g), n.value.toLocaleString("en")].join("\n"),
+          title: (d, n) => `${d.name}\n${n.value.toLocaleString("en")}`, // text to show on hover
+          tile: d3.treemapBinary, // e.g., d3.treemapBinary; set by input above
+          width: 1200,
+          height: 1200
+        })
+
+        document.getElementById("chart").appendChild(chart);
+        key = Swatches(chart.scales.color)
+        document.getElementById("legend").appendChild(key);
+    });
+
+
+
+</script>
+
+<div id="legend" style="margin-left:5px;margin-top:5px;width:1000px;height:50px"></div>
+<div id="chart" style="margin-left:5px;margin-top:5px;width:{{ WIDTH }}px;height:{{ HEIGHT }}px"></div>
+
+</body>
+</html>

@@ -16,6 +16,8 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/sankey
 </head>
 <body>
 
+
+
 <script>
 {% include "d3.v4.min.js" %}
 {% include "d3-scale-chromatic.v1.min.js" %}
@@ -23,6 +25,10 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/sankey
 
 <!-- Create a div where the graph will take place -->
 <div id="my_dataviz"></div>
+
+<!-- Create a box with a legend for each option diplayed in the graph -->
+<div id="legend"></div>
+
 
 <!-- Circle are black when hovered-->
 <style>
@@ -35,7 +41,7 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/sankey
 <script>
 
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 40},
+var margin = {top: 10, right: 30, bottom: 30, left: 60},
     width = {{ WIDTH_FIG }} - margin.left - margin.right,
     height = {{ HEIGHT_FIG }} - margin.top - margin.bottom;
 
@@ -46,6 +52,19 @@ var svg = d3.select("#my_dataviz")
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// Add y axis label
+var axisLabelX = -40;
+var axisLabelY = height / 2;
+
+svg.append('g')
+    .attr('transform', 'translate(' + axisLabelX + ', ' + axisLabelY + ')')
+    .append('text')
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'rotate(-90)')
+    .style("font-size", "12px")
+    .text("{{ unit }}")
+    ;
 
 // Load data and let's do it.
 var data = {{ json_data }}
@@ -150,7 +169,7 @@ window.addEventListener('DOMContentLoaded', function () {
     var mouseleave = function(d) {
     Tooltip
       .style("opacity", 0)
-    // Back to orignal dot-size
+    // Back to original dot-size
     d3.select(this)
       .style("r",  d[3])
     }
@@ -177,5 +196,25 @@ window.addEventListener('DOMContentLoaded', function () {
         {{ MOUSELEAVE }}
 
 })
+
+// add a list of bullet points
+// below the graph
+// where the items in long_names
+// are linked to the items in short_names
+
+// create a list
+var list = d3.select("#my_dataviz")
+  .append("ul")
+  .attr("class", "list-group")
+  .attr("id", "my_list")
+
+// add a list item for each item in long_names
+list.selectAll("li")
+  .data({{ long_names }})
+  .enter()
+  .append("li")
+  .attr("class", "list-group-item")
+  .text(function(d) { return d; })
+
 
 </script>

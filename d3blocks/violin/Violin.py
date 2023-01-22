@@ -14,8 +14,9 @@ from jinja2 import Environment, PackageLoader
 from pathlib import Path
 import os
 import time
+
 try:
-    from .. utils import convert_dataframe_dict, set_path, update_config, write_html_file
+    from ..utils import convert_dataframe_dict, set_path, update_config, write_html_file
 except:
     from utils import convert_dataframe_dict, set_path, update_config, write_html_file
 
@@ -24,7 +25,7 @@ except:
 def set_config(config={}, **kwargs):
     """Set the default configuration settings."""
     logger = kwargs.get('logger', None)
-    config['chart'] ='violin'
+    config['chart'] = 'violin'
     config['title'] = kwargs.get('title', 'Violin - D3blocks')
     config['filepath'] = set_path(kwargs.get('filepath', 'violin.html'), logger)
     config['figsize'] = kwargs.get('figsize', [None, None])
@@ -48,7 +49,7 @@ def set_labels(labels, logger=None):
         labels = labels['x'].values.flatten()
 
     # Checks
-    if (labels is None) or len(labels)<1:
+    if (labels is None) or len(labels) < 1:
         raise Exception(logger.error('Could not extract the labels!'))
 
     # Get unique categories without sort
@@ -98,7 +99,7 @@ def set_edge_properties(*args, **kwargs):
          Contains properties of the unique input edges/links.
     """
     # Collect arguments
-    if len(args)==2:
+    if len(args) == 2:
         x, y = args
     else:
         x = kwargs.get('x', None)
@@ -114,35 +115,39 @@ def set_edge_properties(*args, **kwargs):
     logger = kwargs.get('logger', None)
 
     # Make checks
-    if len(x)!=len(y): raise Exception(logger.error('input parameter "x" should be of size of "y".'))
+    if len(x) != len(y): raise Exception(logger.error('input parameter "x" should be of size of "y".'))
     if size is None: raise Exception(logger.error('input parameter "size" should have value >0.'))
-    if isinstance(size, (list, np.ndarray)) and (len(size)!=len(x)): raise Exception(logger.error('input parameter "s" should be of same size of (x, y).'))
+    if isinstance(size, (list, np.ndarray)) and (len(size) != len(x)): raise Exception(
+        logger.error('input parameter "s" should be of same size of (x, y).'))
     if stroke is None: raise Exception(logger.error('input parameter "stroke" should have hex value.'))
-    if isinstance(stroke, (list, np.ndarray)) and (len(stroke)!=len(x)): raise Exception(logger.error('input parameter "stroke" should be of same size of (x, y).'))
+    if isinstance(stroke, (list, np.ndarray)) and (len(stroke) != len(x)): raise Exception(
+        logger.error('input parameter "stroke" should be of same size of (x, y).'))
     if opacity is None: raise Exception(logger.error('input parameter "opacity" should have value in range [0..1].'))
-    if isinstance(opacity, (list, np.ndarray)) and (len(opacity)!=len(x)): raise Exception(logger.error('input parameter "opacity" should be of same size of (x, y).'))
+    if isinstance(opacity, (list, np.ndarray)) and (len(opacity) != len(x)): raise Exception(
+        logger.error('input parameter "opacity" should be of same size of (x, y).'))
 
     # Convert to dataframe
-    df = pd.DataFrame({'x': x, 'y': y, 'color': color, 'size': size, 'stroke': stroke, 'opacity': opacity, 'tooltip': tooltip})
+    df = pd.DataFrame(
+        {'x': x, 'y': y, 'color': color, 'size': size, 'stroke': stroke, 'opacity': opacity, 'tooltip': tooltip})
 
     # Remove NaN values
     Irem = df['y'].isna()
     if np.any(Irem):
-        if logger is not None: logger.info('Removing [%.0d] NaN values.' %(sum(Irem)))
+        if logger is not None: logger.info('Removing [%.0d] NaN values.' % (sum(Irem)))
         df = df.loc[~Irem, :]
 
     # Filter on class labels
     if x_order is not None:
         classes = "|".join(x_order)
         df = df.loc[df['x'].str.contains(classes), :]
-        if logger is not None: logger.info('Filter on: [%s]' %(classes))
+        if logger is not None: logger.info('Filter on: [%s]' % (classes))
 
     # Color on values and cmap (after cleaning and filtering)
     if color is None:
         df['color'] = colourmap.fromlist(df['y'].values, scheme='hex', cmap=cmap)[0]
 
     df.reset_index(inplace=True, drop=True)
-    if logger is not None: logger.info('Number of samples: %d' %(df.shape[0]))
+    if logger is not None: logger.info('Number of samples: %d' % (df.shape[0]))
     return df
 
 
@@ -188,19 +193,20 @@ def show(df, **kwargs):
     labels = np.unique(df['x'].values)
 
     spacing = 0.10
-    if config['ylim']==[None, None] or len(config['ylim'])==0:
+    if config['ylim'] == [None, None] or len(config['ylim']) == 0:
         y_spacing = (df['y'].max() - df['y'].min()) * spacing
         config['ylim'] = [df['y'].min() - y_spacing, df['y'].max() + y_spacing]
     # Ordering the class labels
     if config['x_order'] is None:
-        config['x_order'] = str(list(labels))
+        #config['x_order'] = str(list(labels))
+        config["x_order"] = [f"Option {i + 1}" for i in range(len(labels))]
     if config['figsize'][0] is None:
         config['figsize'][0] = len(labels) * 95
     if config['figsize'][1] is None:
         config['figsize'][1] = 400
 
     # Check whether tooltip is available. Otherwise remove the tooltip box.
-    if np.all(df['tooltip']=='') or np.all(df['tooltip'].isna()):
+    if np.all(df['tooltip'] == '') or np.all(df['tooltip'].isna()):
         config['mouseover'] = ''
         config['mousemove'] = ''
         config['mouseleave'] = ''
@@ -210,12 +216,12 @@ def show(df, **kwargs):
         config['mouseleave'] = '.on("mouseleave", mouseleave)'
 
     # Create the data from the input of javascript
-    X = get_data_ready_for_d3(df)
+    X, d_names = get_data_ready_for_d3(df)
     # Write to HTML
-    return write_html(X, config, logger)
+    return write_html(X, d_names, config, logger)
 
 
-def write_html(X, config, logger=None):
+def write_html(X, d_names, config, logger=None):
     """Write html.
 
     Parameters
@@ -244,6 +250,8 @@ def write_html(X, config, logger=None):
         'MOUSEOVER': config['mouseover'],
         'MOUSEMOVE': config['mousemove'],
         'MOUSELEAVE': config['mouseleave'],
+        'unit': config.get('unit', ''),
+        'long_names': list(d_names.keys()),
     }
 
     try:
@@ -274,8 +282,15 @@ def get_data_ready_for_d3(df):
         Converted data into a string that is d3 compatible.
 
     """
-    df['y']=df['y'].astype(str)
+    df['y'] = df['y'].astype(str)
     # Set x, y
     X = df[['x', 'y', 'color', 'size', 'stroke', 'opacity', 'tooltip']].to_json(orient='records')
+
+    names = df['x'].unique()
+    d_names = {name: f"Option {i + 1}" for i, name in enumerate(names)}
+
+    for old_name, new_name in d_names.items():
+        X = X.replace(old_name, new_name)
+
     # Return
-    return X
+    return X, d_names
