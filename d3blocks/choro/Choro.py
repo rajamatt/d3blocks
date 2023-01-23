@@ -100,6 +100,7 @@ def write_html(X, Y, config, logger=None):
     content = {
         'json_data': "[" + X + "]",
         'json_data2': "[" + Y + "]",
+        'impact_sum': config["data"].loc[:, "weight"].sum(),
         'TITLE': '"' + title + '"',
         'WIDTH': config['figsize'][0],
         'HEIGHT': config['figsize'][1],
@@ -111,7 +112,7 @@ def write_html(X, Y, config, logger=None):
     except:
         jinja_env = Environment(loader=PackageLoader(package_name='d3blocks.choro', package_path='d3js'))
 
-    index_template = jinja_env.get_template('treemap.html.j2')
+    index_template = jinja_env.get_template('choro.html.j2')
 
     # Generate html content
     html = index_template.render(content)
@@ -275,16 +276,22 @@ def get_data_ready_for_d3(df):
     for i, row in df.iterrows():
         if row["country"] in list_countries:
             loc = coco.convert(row['country'], to='ISOnumeric')
+            # if two-digit, add a zero in front
+            if len(str(loc)) == 2:
+                loc = "0" + str(loc)
             identified_countries[loc] += row["weight"]
         elif row["country"] in extra_mapping:
             loc = coco.convert(extra_mapping[row["country"]], to='ISOnumeric')
+            # if two-digit, add a zero in front
+            if len(str(loc)) == 2:
+                loc = "0" + str(loc)
             identified_countries[loc] += row["weight"]
         else:
             unidentified_countries[row["country"]] += row["weight"]
 
     X = ""
     for key, val in identified_countries.items():
-        X += '{id: "' + str(key) + '", value: ' + str(val) + ', country: "' + coco.convert(key, to='name_short') + '"}, '
+        X += '{id: "' + str(key) + '", value: ' + str(val) + ', country: "' + coco.convert(format_key(key), to='name_short') + '"}, '
 
     X = X[:-2]
 
@@ -296,3 +303,11 @@ def get_data_ready_for_d3(df):
 
     # Return
     return X, Y
+
+def format_key(key):
+    """Remove leading zero from key if it exists."""
+    if isinstance(key, str):
+        if key.startswith("0"):
+            key = key[1:]
+
+    return key

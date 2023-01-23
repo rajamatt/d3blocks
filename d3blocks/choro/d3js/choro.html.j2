@@ -84,7 +84,8 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/directed-chord-diagram
         list_countries_on_map.innerHTML = "<h3>Countries on the map: Value</h3>";
         var list_countries_on_map_html = "<ul>";
         for (var i = 0; i < data.length; i++) {
-            list_countries_on_map_html += "<li>" + data[i].country + ": " + data[i].value.toExponential(2) + "</li>";
+            pct_impact = (data[i].value / {{ impact_sum }}) * 100
+            list_countries_on_map_html += "<li>" + data[i].country + ": " + data[i].value.toExponential(2) + " (" + pct_impact.toFixed(1) + "%)" + "</li>";
         }
         list_countries_on_map_html += "</ul>";
         list_countries_on_map.innerHTML += list_countries_on_map_html;
@@ -97,7 +98,8 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/directed-chord-diagram
         list_countries_not_on_map.innerHTML = "<h3>Countries/regions not on the map: Value</h3>";
         var list_countries_not_on_map_html = "<ul>";
         for (var i = 0; i < unknown_countries.length; i++) {
-            list_countries_not_on_map_html += "<li>" + unknown_countries[i].country + ": " + unknown_countries[i].value.toExponential(2) + "</li>";
+            pct_impact = (unknown_countries[i].value / {{ impact_sum }}) * 100
+            list_countries_not_on_map_html += "<li>" + unknown_countries[i].country + ": " + unknown_countries[i].value.toExponential(2) + " (" + pct_impact.toFixed(1) + "%)" + "</li>";
         }
         list_countries_not_on_map_html += "</ul>";
         list_countries_not_on_map.innerHTML += list_countries_not_on_map_html;
