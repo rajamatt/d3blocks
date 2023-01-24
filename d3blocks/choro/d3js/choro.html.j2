@@ -15,12 +15,10 @@ Forked      : Mike Bostock; https://observablehq.com/@d3/directed-chord-diagram
 </head>
 <body>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.2/d3.min.js"></script>
-<script src="https://unpkg.com/topojson@3"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
-
-
 <script>
+	{% include "topojson.js" %}
+	{% include "d3.min.js" %}
+	{% include "require.js" %}
 	{% include "choro.js" %}
 	{% include "legend.js" %}
 
